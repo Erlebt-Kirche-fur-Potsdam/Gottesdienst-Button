@@ -5,11 +5,12 @@
   "description": "Erlebt Website ==============",
   "main": "godibox.js",
   "dependencies": {
-    "eslint": "^5.0.1"
+    "eslint": "^5.0.1",
+    "typescript": "^2.9.2"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "node_modules/.bin/tsc godibox.ts"
   },
   "repository": {
     "type": "git",
