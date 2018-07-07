@@ -117,7 +117,7 @@
 
     let setGodiboxText = (): void => {
         let eventList = <ICalendarEventList> calendarQueryResult;
-        if (!Array.isArray(eventList.items) || eventList.items.length < 1) {
+        if (!(Array.isArray(eventList.items) && eventList.items.length >= 1)) {
             console.error('No events found.');
             return;
         }
