@@ -1,0 +1,22 @@
+{
+  "name": "erlebt-website",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Erlebt Website ==============",
+  "main": "godibox.js",
+  "dependencies": {
+    "eslint": "^5.0.1",
+    "typescript": "^2.9.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "build": "node_modules/.bin/tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/pcrockett/erlebt-website.git"
+  },
+  "author": "Philip Crockett",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/pcrockett/erlebt-website#readme"
+}
