@@ -10,7 +10,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "build": "node_modules/.bin/tsc godibox.ts"
+    "build": "node_modules/.bin/tsc"
   },
   "repository": {
     "type": "git",
