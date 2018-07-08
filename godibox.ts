@@ -98,8 +98,7 @@
                 + dateString
                 + ' um '
                 + timeString
-                + ' im '
-                + event.location;
+                + ' (' + event.location + ')';
 
         } else {
 
