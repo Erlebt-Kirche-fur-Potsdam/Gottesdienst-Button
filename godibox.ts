@@ -92,7 +92,7 @@
         request.send(null);
     };
 
-    let getNextGottesdienstMessage = (event: ICalendarEvent) => {
+    let getNextGottesdienstMessage = (event: ICalendarEvent, includeLocation: boolean) => {
 
         let isSpecificTime = typeof event.start.dateTime === 'string';
         let date: Date;
@@ -111,7 +111,7 @@
             if (isSpecificTime) {
                 resultText += ' um ' + timeString;
             }
-            if (typeof event.location === 'string') {
+            if (includeLocation && typeof event.location === 'string') {
                 resultText += ' (' + event.location + ')';
             }
             return resultText;
@@ -122,7 +122,7 @@
             if (isSpecificTime) {
                 resultText += ' at ' + timeString;
             }
-            if (typeof event.location === 'string') {
+            if (includeLocation && typeof event.location === 'string') {
                 resultText += ' at ' + event.location;
             }
             return resultText;
@@ -145,7 +145,7 @@
 
         if (locationUrlMatch === null) {
             let gottesdienstElement = document.createElement('span');
-            gottesdienstElement.innerHTML = getNextGottesdienstMessage(event);
+            gottesdienstElement.innerHTML = getNextGottesdienstMessage(event, false);
 
             let br = document.createElement('br');
             
@@ -167,7 +167,7 @@
             (<any>linkElement).style = 'color: #ffffff'; // Background is red and default link color is also red. This fixes that.
 
             let timeDateSpan = document.createElement('span');
-            timeDateSpan.innerHTML = getNextGottesdienstMessage(event);
+            timeDateSpan.innerHTML = getNextGottesdienstMessage(event, false);
 
             let br = document.createElement('br');
 
@@ -196,7 +196,7 @@
         let event = eventList.items[0];
         let buttons = document.getElementsByClassName('godibox');
         Array.prototype.forEach.call(buttons, (x: HTMLElement) => {
-            x.innerHTML = getNextGottesdienstMessage(event);
+            x.innerHTML = getNextGottesdienstMessage(event, true);
         });
 
         let locationDivs = document.getElementsByClassName('gottesdienst-location');
