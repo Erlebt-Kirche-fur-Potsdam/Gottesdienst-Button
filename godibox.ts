@@ -16,7 +16,7 @@
     // we will be harmed by publicly exposing our key.
 
     let locale = "de-DE";
-    let isEnglish = location.pathname.match(/\/en\//)
+    let isEnglish = location.pathname.match(/\/en\//);
     if (isEnglish) {
         locale = "en-GB";
     }
@@ -27,11 +27,14 @@
         readonly summary: string;
         readonly htmlLink: string;
         readonly location: string;
+        readonly description: string;
         readonly start: {
-            readonly dateTime: string;
+            readonly date?: string;
+            readonly dateTime?: string;
         };
         readonly end: {
-            readonly dateTime: string;
+            readonly date?: string;
+            readonly dateTime?: string;
         };
     }
 
@@ -85,32 +88,66 @@
 
         request.open('GET', fullUrl, true);
         request.send(null);
-    }
+    };
 
     let getNextGottesdienstMessage = (event: ICalendarEvent) => {
 
-        let date = new Date(event.start.dateTime);
+        let isSpecificTime = typeof event.start.dateTime === 'string';
+        let date: Date;
+        if (isSpecificTime) {
+            date = new Date(<string> event.start.dateTime);
+        } else {
+            date = new Date(<string> event.start.date);
+        }
+
         let dateString = date.toLocaleDateString(locale, { day: 'numeric', month: 'long'});
         let timeString = date.toLocaleTimeString(locale, { hour: 'numeric', minute: 'numeric' });
 
         if (locale === 'de-DE') {
 
-            return 'Der nächste Gottesdienst ist am '
-                + dateString
-                + ' um '
-                + timeString
-                + ' (' + event.location + ')';
+            let resultText = 'Der nächste Gottesdienst ist am ' + dateString;
+            if (isSpecificTime) {
+                resultText += ' um ' + timeString;
+            }
+            return resultText;
 
         } else {
 
-            return 'The next worship service is on '
-                + dateString
-                + ' at '
-                + timeString
-                + ' at '
-                + event.location;
+            let resultText = 'The next worship service is on ' + dateString;
+            if (isSpecificTime) {
+                resultText += ' at ' + timeString;
+            }
+            return resultText;
         }
-    }
+    };
+
+    let getLocationLink = (event: ICalendarEvent) => {
+
+        let locationText = event.location;
+        if (typeof locationText !== 'string') {
+            return null;
+        }
+
+        let eventDescription = event.description;
+        if (typeof eventDescription !== 'string') {
+            eventDescription = '';
+        }
+
+        let locationUrlMatch = eventDescription.match(/#location (.+)/);
+
+        if (locationUrlMatch === null) {
+            return locationText; // No link available, but we at least have text
+        } else {
+            let locationUrl = locationUrlMatch[1];
+            let linkElement = document.createElement('a');
+            linkElement.href = locationUrl;
+            linkElement.target = '_blank'; // Open new tab
+            linkElement.rel = 'noopener noreferrer'; // See note under "target" at https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
+            linkElement.innerHTML = locationText;
+
+            return linkElement;
+        }
+    };
 
     let windowLoaded = false;
     let calendarQueryResult: object;
@@ -126,8 +163,21 @@
         let buttons = document.getElementsByClassName('godibox');
         Array.prototype.forEach.call(buttons, (x: HTMLElement) => {
             x.innerHTML = getNextGottesdienstMessage(event);
-        })
-    }
+        });
+
+        let locationDivs = document.getElementsByClassName('gottesdienst-location');
+        Array.prototype.forEach.call(locationDivs, (x: HTMLElement) => {
+            let contents = getLocationLink(event);
+            if (typeof contents === 'string') {
+                x.innerHTML = 'Location: ' + contents;
+                x.hidden = false;
+            } else if (contents !== null) {
+                x.innerHTML = 'Location: ';
+                x.appendChild(contents);
+                x.hidden = false;
+            }
+        });
+    };
 
     let onCalendarResponse = (data: object) => {
 
@@ -135,7 +185,7 @@
         if (windowLoaded) {
             setGodiboxText();
         }
-    }
+    };
 
     httpGetAsync(
         {
