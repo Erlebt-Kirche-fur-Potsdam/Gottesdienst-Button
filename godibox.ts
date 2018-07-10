@@ -136,14 +136,38 @@
         let locationUrlMatch = eventDescription.match(/#location (.+)/);
 
         if (locationUrlMatch === null) {
-            return locationText; // No link available, but we at least have text
+            let gottesdienstElement = document.createElement('span');
+            gottesdienstElement.innerHTML = getNextGottesdienstMessage(event);
+
+            let br = document.createElement('br');
+            
+            let locationElement = document.createElement('span');
+            locationElement.innerHTML = 'Location: ' + locationText;
+
+            let divElement = document.createElement('div');
+            divElement.appendChild(gottesdienstElement);
+            divElement.appendChild(br);
+            divElement.appendChild(locationElement);
+
+            return divElement;
         } else {
             let locationUrl = locationUrlMatch[1];
             let linkElement = document.createElement('a');
             linkElement.href = locationUrl;
             linkElement.target = '_blank'; // Open new tab
             linkElement.rel = 'noopener noreferrer'; // See note under "target" at https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
-            linkElement.innerHTML = locationText;
+
+            let timeDateSpan = document.createElement('span');
+            timeDateSpan.innerHTML = getNextGottesdienstMessage(event);
+
+            let br = document.createElement('br');
+
+            let locationSpan = document.createElement('span');
+            locationSpan.innerHTML = 'Location: ' + locationText;
+
+            linkElement.appendChild(timeDateSpan);
+            linkElement.appendChild(br);
+            linkElement.appendChild(locationSpan);
 
             return linkElement;
         }
@@ -168,11 +192,7 @@
         let locationDivs = document.getElementsByClassName('gottesdienst-location');
         Array.prototype.forEach.call(locationDivs, (x: HTMLElement) => {
             let contents = getLocationLink(event);
-            if (typeof contents === 'string') {
-                x.innerHTML = 'Location: ' + contents;
-                x.hidden = false;
-            } else if (contents !== null) {
-                x.innerHTML = 'Location: ';
+            if (contents !== null) {
                 x.appendChild(contents);
                 x.hidden = false;
             }
