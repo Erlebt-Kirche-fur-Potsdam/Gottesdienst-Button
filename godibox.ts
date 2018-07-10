@@ -16,9 +16,11 @@
     // we will be harmed by publicly exposing our key.
 
     let locale = "de-DE";
+    let locationNoun = 'Ort';
     let isEnglish = location.pathname.match(/\/en\//);
     if (isEnglish) {
         locale = "en-GB";
+        locationNoun = 'Location';
     }
 
     interface ICalendarEvent {
@@ -109,6 +111,9 @@
             if (isSpecificTime) {
                 resultText += ' um ' + timeString;
             }
+            if (typeof event.location === 'string') {
+                resultText += ' (' + event.location + ')';
+            }
             return resultText;
 
         } else {
@@ -116,6 +121,9 @@
             let resultText = 'The next worship service is on ' + dateString;
             if (isSpecificTime) {
                 resultText += ' at ' + timeString;
+            }
+            if (typeof event.location === 'string') {
+                resultText += ' at ' + event.location;
             }
             return resultText;
         }
@@ -142,7 +150,7 @@
             let br = document.createElement('br');
             
             let locationElement = document.createElement('span');
-            locationElement.innerHTML = 'Location: ' + locationText;
+            locationElement.innerHTML = locationNoun + ': ' + locationText;
 
             let divElement = document.createElement('div');
             divElement.appendChild(gottesdienstElement);
@@ -164,7 +172,8 @@
             let br = document.createElement('br');
 
             let locationSpan = document.createElement('span');
-            locationSpan.innerHTML = 'Location: ' + locationText;
+            (<any>locationSpan).style = 'text-decoration: underline';
+            locationSpan.innerHTML = locationNoun + ': ' + locationText;
 
             linkElement.appendChild(timeDateSpan);
             linkElement.appendChild(br);
