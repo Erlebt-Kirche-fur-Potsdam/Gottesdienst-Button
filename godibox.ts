@@ -2,6 +2,7 @@
 
     const apiRoot = 'https://www.googleapis.com/calendar/v3/';
     const calendarId = 'erlebt-potsdam.de_p9f0ev454afa5g8m919tfa7qoo@group.calendar.google.com'
+    const eventSearchQuery = '#gottesdienst'
 
     const gApiKey = 'AIzaSyC_W6txNNzFUfaYFvePRqO1Tti3aJ73pHs';
     // Normally Google API keys should be kept secret. However:
@@ -144,7 +145,7 @@
                 orderBy: 'startTime',
                 timeMin: new Date().toISOString(),
                 singleEvents: 'true',
-                q: '#gottesdienst'
+                q: eventSearchQuery
             }
         },
         onCalendarResponse,
