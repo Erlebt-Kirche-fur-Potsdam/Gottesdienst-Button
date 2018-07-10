@@ -156,6 +156,7 @@
             linkElement.href = locationUrl;
             linkElement.target = '_blank'; // Open new tab
             linkElement.rel = 'noopener noreferrer'; // See note under "target" at https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
+            (<any>linkElement).style = 'color: #ffffff'; // Background is red and default link color is also red. This fixes that.
 
             let timeDateSpan = document.createElement('span');
             timeDateSpan.innerHTML = getNextGottesdienstMessage(event);
@@ -194,7 +195,6 @@
             let contents = getLocationLink(event);
             if (contents !== null) {
                 x.appendChild(contents);
-                x.hidden = false;
             }
         });
     };
