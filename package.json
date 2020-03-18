@@ -4,11 +4,11 @@
   "version": "1.0.0",
   "description": "Erlebt Website ==============",
   "main": "godibox.js",
-  "dependencies": {
-    "eslint": "^5.0.1",
-    "typescript": "^2.9.2"
+  "dependencies": {},
+  "devDependencies": {
+    "tslint": "^6.1.0",
+    "typescript": "^3.8.3"
   },
-  "devDependencies": {},
   "scripts": {
     "build": "node_modules/.bin/tsc"
   },
