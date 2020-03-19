@@ -50,7 +50,15 @@
         readonly parameters?: { [key: string]: string }
     }
 
-    let httpGetAsync = (requestParams: IRequestParameters, success: (response: any) => void, error: (response: any) => void) => {
+    interface IGodiInfo {
+        date: string,
+        time?: string,
+        locationName?: string,
+        locationUrl?: string,
+        liveStreamUrl?: string
+    }
+
+    const httpGetAsync = (requestParams: IRequestParameters, success: (response: any) => void, error: (response: any) => void) => {
 
         let request = new XMLHttpRequest();
         let timeoutEventHandle: number;
@@ -92,44 +100,49 @@
         request.send(null);
     };
 
-    let getNextGottesdienstMessage = (event: ICalendarEvent, includeLocation: boolean): string => {
-
-        let isSpecificTime = typeof event.start.dateTime === 'string';
-        let date: Date;
-        if (isSpecificTime) {
-            date = new Date(<string> event.start.dateTime);
-        } else {
-            date = new Date(<string> event.start.date);
-        }
-
-        let dateString = date.toLocaleDateString(locale, { day: 'numeric', month: 'long'});
-        let timeString = date.toLocaleTimeString(locale, { hour: 'numeric', minute: 'numeric' });
+    const getGodiDateTimeMessage = (event: IGodiInfo): string => {
 
         if (locale === 'de-DE') {
 
-            let resultText = 'Der nächste Gottesdienst ist am ' + dateString;
-            if (isSpecificTime) {
-                resultText += ' um ' + timeString;
-            }
-            if (includeLocation && typeof event.location === 'string') {
-                resultText += ' (' + event.location + ')';
+            let resultText = `Der nächste Gottesdienst ist am ${event.date}`;
+            if (typeof event.time === 'string') {
+                resultText += ` um ${event.time}`;
             }
             return resultText;
 
         } else {
 
-            let resultText = 'The next worship service is on ' + dateString;
-            if (isSpecificTime) {
-                resultText += ' at ' + timeString;
-            }
-            if (includeLocation && typeof event.location === 'string') {
-                resultText += ' at ' + event.location;
+            let resultText = `The next worship service is on ${event.date}`;
+            if (typeof event.time === 'string') {
+                resultText += ` at ${event.time}`;
             }
             return resultText;
         }
     };
 
-    let createElement = function<K extends keyof HTMLElementTagNameMap>(elementType: K, children?: Node[]): HTMLElement {
+    const getGodiButtonMessage = (event: IGodiInfo): string => {
+
+        let resultText = getGodiDateTimeMessage(event);
+
+        if (locale === 'de-DE') {
+            if (typeof event.locationName === 'string') {
+                resultText += ` (${event.locationName})`;
+            }
+            if (typeof event.liveStreamUrl === 'string') {
+                resultText += ' (Live Stream verfügbar)';
+            }
+        } else {
+            if (typeof event.locationName === 'string') {
+                resultText += ` at ${event.locationName}`;
+            }
+            if (typeof event.liveStreamUrl === 'string') {
+                resultText += ' (Live stream available)'
+            }
+        }
+        return resultText;
+    };
+
+    const createElement = function<K extends keyof HTMLElementTagNameMap>(elementType: K, children?: Node[]): HTMLElement {
         let elem = document.createElement(elementType);
         if (Array.isArray(children)) {
             children.forEach(x => elem.appendChild(x));
@@ -137,7 +150,7 @@
         return elem;
     };
 
-    let createLink = (href: string, children: Node[]): HTMLAnchorElement => {
+    const createLink = (href: string, children: Node[]): HTMLAnchorElement => {
         let linkElement = document.createElement('a');
         linkElement.href = href;
         linkElement.target = '_blank'; // Open new tab
@@ -147,11 +160,26 @@
         return linkElement;
     };
 
-    let getGottesdienstContent = (event: ICalendarEvent): HTMLElement | null => {
+    let getGodiInfo = (event: ICalendarEvent): IGodiInfo => {
 
-        let locationText = event.location;
-        if (typeof locationText !== 'string') {
-            return null;
+        let isSpecificTime = typeof event.start.dateTime === 'string';
+        let date: Date;
+        if (isSpecificTime) {
+            date = new Date(<string> event.start.dateTime);
+        } else {
+            date = new Date(<string> event.start.date);
+        }
+
+        let info: IGodiInfo = {
+            date: date.toLocaleDateString(locale, { day: 'numeric', month: 'long'})
+        };
+
+        if (isSpecificTime) {
+            info.time = date.toLocaleTimeString(locale, { hour: 'numeric', minute: 'numeric' });
+        }
+
+        if (typeof event.location === 'string') {
+            info.locationName = event.location;
         }
 
         let eventDescription = event.description;
@@ -160,41 +188,54 @@
         }
 
         let locationUrlMatch = eventDescription.match(/#location (.+)/);
-
-        if (locationUrlMatch === null) {
-            let gottesdienstElement = document.createElement('span');
-            gottesdienstElement.innerHTML = getNextGottesdienstMessage(event, false);
-
-            let locationElement = document.createElement('span');
-            locationElement.innerHTML = locationNoun + ': ' + locationText;
-
-            let divElement = createElement('div', [
-                gottesdienstElement,
-                createElement('br'),
-                locationElement
-            ]);
-
-            return divElement;
-        } else {
-            let locationUrl = locationUrlMatch[1];
-
-            let timeDateSpan = document.createElement('span');
-            timeDateSpan.innerHTML = getNextGottesdienstMessage(event, false);
-
-            let locationSpan = document.createElement('span');
-            (<any>locationSpan).style = 'text-decoration: underline';
-            locationSpan.innerHTML = locationNoun + ': ' + locationText;
-
-            let locationLink = createLink(locationUrl, [ locationSpan ]);
-
-            let div = createElement('div', [
-                timeDateSpan,
-                createElement('br'),
-                locationLink
-            ]);
-
-            return div;
+        if (locationUrlMatch !== null && locationUrlMatch !== undefined) {
+            info.locationUrl = locationUrlMatch[1]
         }
+
+        let liveStreamUrlMatch = eventDescription.match(/#livestream (.+)/);
+        if (liveStreamUrlMatch !== null && liveStreamUrlMatch !== undefined) {
+            info.liveStreamUrl = liveStreamUrlMatch[1]
+        }
+
+        return info;
+    };
+
+    let getGodiDiv = (event: ICalendarEvent): HTMLElement | null => {
+
+        let godiInfo = getGodiInfo(event);
+
+        let timeDateSpan = createElement('span');
+        timeDateSpan.innerHTML = getGodiDateTimeMessage(godiInfo);
+
+        let divContents = [ timeDateSpan ];
+
+        if (typeof godiInfo.locationName === 'string') {
+
+            divContents.push(createElement('br'));
+
+            let locationSpan = createElement('span');
+            if (typeof godiInfo.locationUrl === 'string') {
+                (<any>locationSpan).style = 'text-decoration: underline';
+                locationSpan.innerHTML = locationNoun + ': ' + godiInfo.locationName;
+                let locationLink = createLink(godiInfo.locationUrl, [ locationSpan ]);
+                divContents.push(locationLink);
+            } else {
+                locationSpan.innerHTML = locationNoun + ': ' + godiInfo.locationName;
+                divContents.push(locationSpan);
+            }
+        }
+
+        if (typeof godiInfo.liveStreamUrl === 'string') {
+            divContents.push(createElement('br'));
+            let liveStreamSpan = createElement('span');
+            (<any>liveStreamSpan).style = 'text-decoration: underline';
+            liveStreamSpan.innerHTML = 'Live Stream';
+            let liveStreamLink = createLink(godiInfo.liveStreamUrl, [ liveStreamSpan ]);
+            divContents.push(liveStreamLink);
+        }
+
+        return createElement('div', divContents);
+
     };
 
     let windowLoaded = false;
@@ -208,14 +249,15 @@
         }
         
         let event = eventList.items[0];
+        let godiInfo = getGodiInfo(event);
         let buttons = document.getElementsByClassName('godibox');
         Array.prototype.forEach.call(buttons, (x: HTMLElement) => {
-            x.innerHTML = getNextGottesdienstMessage(event, true);
+            x.innerHTML = getGodiButtonMessage(godiInfo);
         });
 
         let locationDivs = document.getElementsByClassName('gottesdienst-location');
         Array.prototype.forEach.call(locationDivs, (x: HTMLElement) => {
-            let contents = getGottesdienstContent(event);
+            let contents = getGodiDiv(event);
             if (contents !== null) {
                 x.appendChild(contents);
             }
