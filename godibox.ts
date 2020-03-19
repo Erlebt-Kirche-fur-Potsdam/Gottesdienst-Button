@@ -92,7 +92,7 @@
         request.send(null);
     };
 
-    let getNextGottesdienstMessage = (event: ICalendarEvent, includeLocation: boolean) => {
+    let getNextGottesdienstMessage = (event: ICalendarEvent, includeLocation: boolean): string => {
 
         let isSpecificTime = typeof event.start.dateTime === 'string';
         let date: Date;
@@ -129,7 +129,25 @@
         }
     };
 
-    let getLocationLink = (event: ICalendarEvent) => {
+    let createElement = function<K extends keyof HTMLElementTagNameMap>(elementType: K, children?: Node[]): HTMLElement {
+        let elem = document.createElement(elementType);
+        if (Array.isArray(children)) {
+            children.forEach(x => elem.appendChild(x));
+        }
+        return elem;
+    };
+
+    let createLink = (href: string, children: Node[]): HTMLAnchorElement => {
+        let linkElement = document.createElement('a');
+        linkElement.href = href;
+        linkElement.target = '_blank'; // Open new tab
+        linkElement.rel = 'noopener noreferrer'; // See note under "target" at https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
+        (<any>linkElement).style = 'color: #ffffff'; // Background is red and default link color is also red. This fixes that.
+        children.forEach(x => linkElement.appendChild(x));
+        return linkElement;
+    };
+
+    let getGottesdienstContent = (event: ICalendarEvent): HTMLElement | null => {
 
         let locationText = event.location;
         if (typeof locationText !== 'string') {
@@ -147,39 +165,35 @@
             let gottesdienstElement = document.createElement('span');
             gottesdienstElement.innerHTML = getNextGottesdienstMessage(event, false);
 
-            let br = document.createElement('br');
-            
             let locationElement = document.createElement('span');
             locationElement.innerHTML = locationNoun + ': ' + locationText;
 
-            let divElement = document.createElement('div');
-            divElement.appendChild(gottesdienstElement);
-            divElement.appendChild(br);
-            divElement.appendChild(locationElement);
+            let divElement = createElement('div', [
+                gottesdienstElement,
+                createElement('br'),
+                locationElement
+            ]);
 
             return divElement;
         } else {
             let locationUrl = locationUrlMatch[1];
-            let linkElement = document.createElement('a');
-            linkElement.href = locationUrl;
-            linkElement.target = '_blank'; // Open new tab
-            linkElement.rel = 'noopener noreferrer'; // See note under "target" at https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
-            (<any>linkElement).style = 'color: #ffffff'; // Background is red and default link color is also red. This fixes that.
 
             let timeDateSpan = document.createElement('span');
             timeDateSpan.innerHTML = getNextGottesdienstMessage(event, false);
-
-            let br = document.createElement('br');
 
             let locationSpan = document.createElement('span');
             (<any>locationSpan).style = 'text-decoration: underline';
             locationSpan.innerHTML = locationNoun + ': ' + locationText;
 
-            linkElement.appendChild(timeDateSpan);
-            linkElement.appendChild(br);
-            linkElement.appendChild(locationSpan);
+            let locationLink = createLink(locationUrl, [ locationSpan ]);
 
-            return linkElement;
+            let div = createElement('div', [
+                timeDateSpan,
+                createElement('br'),
+                locationLink
+            ]);
+
+            return div;
         }
     };
 
@@ -201,7 +215,7 @@
 
         let locationDivs = document.getElementsByClassName('gottesdienst-location');
         Array.prototype.forEach.call(locationDivs, (x: HTMLElement) => {
-            let contents = getLocationLink(event);
+            let contents = getGottesdienstContent(event);
             if (contents !== null) {
                 x.appendChild(contents);
             }
