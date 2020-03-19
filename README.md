@@ -1,5 +1,7 @@
-Erlebt Website
-==============
+Erlebt Website Gottesdienst Info
+================================
+
+This is the source of the JavaScript running on our website that queries Google Calendar and populates the website with Gottesdienst details.
 
 Invisible Code Sections
 -----------------------
@@ -11,21 +13,19 @@ godibox.ts
 
 A script that queries the Google calendar API to populate the Gottesdienst text boxes on our website.
 
-It queries the [Erlebt public calendar](https://calendar.google.com/calendar/embed?src=erlebt-potsdam.de_p9f0ev454afa5g8m919tfa7qoo%40group.calendar.google.com&ctz=Europe%2FBerlin) for the next event with the text `#gottesdienst` in the description. It then uses that date, time, and location information to dynamically update the "Next worship service" message on the website.
+It queries the [Erlebt public calendar](https://calendar.google.com/calendar/embed?src=erlebt-potsdam.de_p9f0ev454afa5g8m919tfa7qoo%40group.calendar.google.com&ctz=Europe%2FBerlin) for the next event with the text `#gottesdienst` in the description. It then uses that date, time, location, and live stream information to dynamically update the "Next worship service" message on the website.
 
-As of this writing (2018-07-07) both [Christoph](mailto:christoph@erlebt-potsdam.de) and [Phil](mailto:phil@erlebt-potsdam.de) have read/write access to this calendar.
+As of this writing (2020-03-19) both [Christoph](mailto:christoph@erlebt-potsdam.de) and [Phil](mailto:contact@philcrockett.com) have read/write access to this calendar.
 
-This Typescript is compiled into Javascript. To build it, run
+This Typescript is compiled into JavaScript. To build it, run
 
     npm install
     npm run-script build
 
-The Javascript then gets copy/pasted into 4 places:
+The JavaScript then gets copy/pasted into 2 places:
 
-* The German home page's code section
-* The German Gottesdienst page's code section
-* The English home page's code section
-* The English worship service page's code section
+* The home page's code section
+* The Gottesdienst page's code section
 
 test.html
 ---------
