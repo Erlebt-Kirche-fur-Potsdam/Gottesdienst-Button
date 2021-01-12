@@ -3,6 +3,7 @@
     const apiRoot = 'https://www.googleapis.com/calendar/v3/';
     const calendarId = 'erlebt-potsdam.de_p9f0ev454afa5g8m919tfa7qoo@group.calendar.google.com'
     const eventSearchQuery = '#gottesdienst'
+    const locale = "de-DE";
 
     const gApiKey = 'AIzaSyC_W6txNNzFUfaYFvePRqO1Tti3aJ73pHs';
     // Normally Google API keys should be kept secret. However:
@@ -14,14 +15,6 @@
     //
     // While these are not bulletproof protections, it at least makes it unlikely
     // we will be harmed by publicly exposing our key.
-
-    let locale = "de-DE";
-    let locationNoun = 'Ort';
-    let isEnglish = location.pathname.match(/\/en\//);
-    if (isEnglish) {
-        locale = "en-GB";
-        locationNoun = 'Location';
-    }
 
     interface ICalendarEvent {
         readonly kind: 'calendar#event';
@@ -102,43 +95,25 @@
 
     const getGodiDateTimeMessage = (event: IGodiInfo): string => {
 
-        if (locale === 'de-DE') {
-
-            let resultText = `Der nächste Gottesdienst ist am ${event.date}`;
-            if (typeof event.time === 'string') {
-                resultText += ` um ${event.time}`;
-            }
-            return resultText;
-
-        } else {
-
-            let resultText = `The next worship service is on ${event.date}`;
-            if (typeof event.time === 'string') {
-                resultText += ` at ${event.time}`;
-            }
-            return resultText;
+        let resultText = `Der nächste Gottesdienst ist am ${event.date}`;
+        if (typeof event.time === 'string') {
+            resultText += ` um ${event.time}`;
         }
+        return resultText;
     };
 
     const getGodiButtonMessage = (event: IGodiInfo): string => {
 
         let resultText = getGodiDateTimeMessage(event);
 
-        if (locale === 'de-DE') {
-            if (typeof event.locationName === 'string') {
-                resultText += ` (${event.locationName})`;
-            }
-            if (typeof event.liveStreamUrl === 'string') {
-                resultText += ' (Live Stream verfügbar)';
-            }
-        } else {
-            if (typeof event.locationName === 'string') {
-                resultText += ` at ${event.locationName}`;
-            }
-            if (typeof event.liveStreamUrl === 'string') {
-                resultText += ' (Live stream available)'
-            }
+        if (typeof event.locationName === 'string') {
+            resultText += ` (${event.locationName})`;
         }
+
+        if (typeof event.liveStreamUrl === 'string') {
+            resultText += ' (Live Stream verfügbar)';
+        }
+
         return resultText;
     };
 
@@ -216,11 +191,11 @@
             let locationSpan = createElement('span');
             if (typeof godiInfo.locationUrl === 'string') {
                 (<any>locationSpan).style = 'text-decoration: underline';
-                locationSpan.innerHTML = locationNoun + ': ' + godiInfo.locationName;
+                locationSpan.innerHTML = 'Ort: ' + godiInfo.locationName;
                 let locationLink = createLink(godiInfo.locationUrl, [ locationSpan ]);
                 divContents.push(locationLink);
             } else {
-                locationSpan.innerHTML = locationNoun + ': ' + godiInfo.locationName;
+                locationSpan.innerHTML = 'Ort: ' + godiInfo.locationName;
                 divContents.push(locationSpan);
             }
         }
