@@ -102,15 +102,23 @@
         return resultText;
     };
 
+    const getLiveStreamDateTimeMessage = (event: IGodiInfo): string => {
+
+        if (typeof event.time === 'string' && event.time.length > 0) {
+            return `Der nächste Livestream findet am ${event.date} um ${event.time} statt`;
+        } else {
+            return `Der nächste Livestream findet am ${event.date} statt`;
+        }
+    };
+
     const getGodiButtonMessage = (event: IGodiInfo): string => {
 
-        let resultText = getGodiDateTimeMessage(event);
-
-        if (typeof event.locationName === 'string') {
-            resultText += ` (${event.locationName})`;
+        if (typeof event.locationName !== 'string' || event.locationName.length === 0) {
+            return getLiveStreamDateTimeMessage(event);
         }
 
-        if (typeof event.liveStreamUrl === 'string') {
+        let resultText = `${getGodiDateTimeMessage(event)} (${event.locationName})`;
+        if (typeof event.liveStreamUrl === 'string' && event.liveStreamUrl.length > 0) {
             resultText += ' (Live Stream verfügbar)';
         }
 
@@ -180,11 +188,16 @@
         let godiInfo = getGodiInfo(event);
 
         let timeDateSpan = createElement('span');
-        timeDateSpan.innerHTML = getGodiDateTimeMessage(godiInfo);
+
+        if (typeof godiInfo.locationName === 'string' && godiInfo.locationName.length > 0) {
+            timeDateSpan.innerHTML = getGodiDateTimeMessage(godiInfo);
+        } else {
+            timeDateSpan.innerHTML = getLiveStreamDateTimeMessage(godiInfo);
+        }
 
         let divContents = [ timeDateSpan ];
 
-        if (typeof godiInfo.locationName === 'string') {
+        if (typeof godiInfo.locationName === 'string' && godiInfo.locationName.length > 0) {
 
             divContents.push(createElement('br'));
 
@@ -200,11 +213,11 @@
             }
         }
 
-        if (typeof godiInfo.liveStreamUrl === 'string') {
+        if (typeof godiInfo.liveStreamUrl === 'string' && godiInfo.liveStreamUrl.length > 0) {
             divContents.push(createElement('br'));
             let liveStreamSpan = createElement('span');
             (<any>liveStreamSpan).style = 'text-decoration: underline';
-            liveStreamSpan.innerHTML = 'Live Stream';
+            liveStreamSpan.innerHTML = 'Livestream';
             let liveStreamLink = createLink(godiInfo.liveStreamUrl, [ liveStreamSpan ]);
             divContents.push(liveStreamLink);
         }
